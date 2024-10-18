@@ -10,9 +10,9 @@
 
 #include <cuda.h>
 
-#define MATRIX_WIDTH 4096
-#define BLOCK_SIZE 32
-#define TILE_WIDTH 32
+#define MATRIX_WIDTH 1024
+#define BLOCK_SIZE 8
+#define TILE_WIDTH 8
 
 void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix);
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix);
@@ -47,8 +47,32 @@ int main()
         }
     }
 
+    // Thread block size
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
+
+    // Caluclate threads per block based of grid width and block size
+    int threadX = std::ceil((double)MATRIX_WIDTH / dimBlock.x);
+    int threadY = std::ceil((double)MATRIX_WIDTH / dimBlock.y);
+    dim3 dimGrid(threadX, threadY, 1);
+
+    // Print array information
+    std::cout << "Array size: " << arraySize << std::endl;
+    std::cout << "Thread block size: " << BLOCK_SIZE << std ::endl;
+    std::cout << "Number of thread blocks: " << threadX * threadY << std::endl;
+
+    clock_t start,
+        end; // used to measure the execution time on CPU
+    start = clock();
+
     // Do CPU matrix addition with matrixA and matrixB
     multiply_matrix_cpu(matrixA, matrixB, cpuOutput);
+
+    end = clock();
+
+    // Display how long it took the CPU to execute
+    printf("\nCLOCKS_PER_SEC:%ld", CLOCKS_PER_SEC);
+    printf("\nNumber of clock ticks:%ld", (end - start));
+    printf("\nCPU execution time in seconds:%f\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     std::cout << "Matrix A:" << std::endl;
     displayMatrix(matrixA);
@@ -61,14 +85,6 @@ int main()
     std::cout << "CPU Output:" << std::endl;
     displayMatrix(cpuOutput);
     std::cout << std::endl;
-
-    // Thread block size
-    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
-
-    // Caluclate threads per block based of grid width and block size
-    int threadX = std::ceil((double)MATRIX_WIDTH / dimBlock.x);
-    int threadY = std::ceil((double)MATRIX_WIDTH / dimBlock.y);
-    dim3 dimGrid(threadX, threadY, 1);
 
     // Define GPU matrices
     float hostOutputMatrix[arraySize];
@@ -88,7 +104,24 @@ int main()
     cudaMemcpy(deviceMatrixA, matrixA, memSize, cudaMemcpyHostToDevice);
     cudaMemcpy(deviceMatrixB, matrixB, memSize, cudaMemcpyHostToDevice);
 
+    // Create timing variables
+    float timeGPU; // Time the GPU method.
+    cudaEvent_t gpuStart, gpuStop;
+
+    // Start timing gpu execution
+    cudaEventCreate(&gpuStart);
+    cudaEventCreate(&gpuStop);
+    cudaEventRecord(gpuStart, 0);
+
     multiply_matrix_gpu<<<dimGrid, dimBlock>>>(deviceMatrixA, deviceMatrixB, deviceMatrixOutput);
+
+    // Stop timer
+    cudaDeviceSynchronize();
+    cudaEventRecord(gpuStop, 0);
+    cudaEventSynchronize(gpuStop);
+    cudaEventElapsedTime(&timeGPU, gpuStart, gpuStop);
+    cudaEventDestroy(gpuStart);
+    cudaEventDestroy(gpuStop);
 
     // Copy result back from GPU
     cudaMemcpy(hostOutputMatrix, deviceMatrixOutput, memSize, cudaMemcpyDeviceToHost);
@@ -97,6 +130,8 @@ int main()
     cudaDeviceSynchronize();
 
     // Display results
+    std::cout << "GPU Execution Time in seconds: " << timeGPU << std::endl;
+
     std::cout << "Matrix A:" << std::endl;
     displayMatrix(matrixA);
     std::cout << std::endl;
