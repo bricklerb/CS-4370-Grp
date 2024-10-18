@@ -2,7 +2,7 @@
 // Class: CS 4370 - Parallel Programming for Many-core Gpus
 // Instructor: Meilin Liu
 // Date - 10/18/2024
-// Assignment: Project 2
+// Assignment: Project 2 - Tiled Matrix Multiplication
 
 #include <stdio.h>
 #include <iostream>
@@ -206,7 +206,7 @@ void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix)
     // Loop through all the rows of the matrix
     for (int i = 0; i < MATRIX_WIDTH; i++)
     {
-        // Foreach row loop through each column
+        // For each row loop through each column
         for (int j = 0; j < MATRIX_WIDTH; j++)
         {
             // Declare a sum for the current entries output
