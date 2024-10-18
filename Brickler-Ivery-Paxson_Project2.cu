@@ -10,9 +10,9 @@
 
 #include <cuda.h>
 
-#define MATRIX_WIDTH 128
-#define BLOCK_SIZE 8
-#define TILE_WIDTH 8
+#define MATRIX_WIDTH 4096
+#define BLOCK_SIZE 32
+#define TILE_WIDTH 32
 
 void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix);
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix);
@@ -166,14 +166,14 @@ void displayMatrix(float *matrix)
             {
                 // Display the value of the current entry
                 int index = i * MATRIX_WIDTH + j;
-                // if (matrix[index] < 0)
-                // {
-                    printf("%9.0f ", matrix[index]);
-                // }
-                // else
-                // {
-                //     std::cout << matrix[index] << "   ";
-                // }
+                if (matrix[index] < 0)
+                {
+                    std::cout << matrix[index] << " ";
+                }
+                else
+                {
+                    std::cout << matrix[index] << "   ";
+                }
             }
             std::cout << std::endl;
         }
@@ -184,8 +184,7 @@ void displayMatrix(float *matrix)
         for (int i = 0; i < MATRIX_WIDTH; i++)
         {
             // Display the value of the current entry
-            // std::cout << matrix[i] << " ";
-            printf("%9.0f ", matrix[index]);
+            std::cout << matrix[i] << " ";
         }
 
         std::cout << std::endl;
