@@ -10,9 +10,9 @@
 
 #include <cuda.h>
 
-#define MATRIX_WIDTH 4
-#define BLOCK_SIZE 4
-#define TILE_WIDTH 2
+#define MATRIX_WIDTH 4096
+#define BLOCK_SIZE 32
+#define TILE_WIDTH 32
 
 void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix);
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix);
@@ -233,8 +233,8 @@ void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix)
 /// @return
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix)
 {
-    __shared__ float ds_A[TILE_WIDTH * TILE_WIDTH];
-    __shared__ float ds_B[TILE_WIDTH * TILE_WIDTH];
+    __shared__ float ds_A[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float ds_B[TILE_WIDTH][TILE_WIDTH];
 
     int bx = blockIdx.x;
     int by = blockIdx.y;
@@ -250,13 +250,13 @@ __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outpu
     for (int i = 0; i < MATRIX_WIDTH / TILE_WIDTH; i++)
     {
         // Loading data into the current tile
-        ds_A[ty * i + tx] = matrixA[(row * MATRIX_WIDTH) + (i * TILE_WIDTH) + tx];
-        ds_B[ty * i + tx] = matrixB[(i * TILE_WIDTH + ty) * MATRIX_WIDTH + col];
+        ds_A[ty][tx] = matrixA[(row * MATRIX_WIDTH) + (i * TILE_WIDTH) + tx];
+        ds_B[ty][tx] = matrixB[(i * TILE_WIDTH + ty) * MATRIX_WIDTH + col];
         __syncthreads();
 
         for (int j = 0; j < TILE_WIDTH; j++)
         {
-            pValue += ds_A[ty * TILE_WIDTH + j] * ds_B[j * TILE_WIDTH + tx];
+            pValue += ds_A[ty][j] * ds_B[j][tx];
         }
         __syncthreads();
     }
