@@ -10,9 +10,9 @@
 
 #include <cuda.h>
 
-#define MATRIX_WIDTH 4
-#define BLOCK_SIZE 4
-#define TILE_WIDTH 2
+#define MATRIX_WIDTH 128
+#define BLOCK_SIZE 8
+#define TILE_WIDTH 8
 
 void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix);
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix);
@@ -22,7 +22,7 @@ void displayMatrix(float *matrix);
 
 int main()
 {
-    // Define the matricies necessary for matrix addition
+    // Define the matrices necessary for matrix addition
     int arraySize = MATRIX_WIDTH * MATRIX_WIDTH;
     float matrixA[arraySize];
     float matrixB[arraySize];
@@ -42,13 +42,37 @@ int main()
             int index = (i * MATRIX_WIDTH) + j;
 
             init = 3125 * init % 6553;
-            matrixA[index] = ((init - 1000) % 6553) % 100;
-            matrixB[index] = (init % 251) % 100; // TODO change these back
+            matrixA[index] = ((init - 1000) % 6553);
+            matrixB[index] = (init % 251);
         }
     }
 
+    // Thread block size
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
+
+    // Caluclate threads per block based of grid width and block size
+    int threadX = std::ceil((double)MATRIX_WIDTH / dimBlock.x);
+    int threadY = std::ceil((double)MATRIX_WIDTH / dimBlock.y);
+    dim3 dimGrid(threadX, threadY, 1);
+
+    // Print array information
+    std::cout << "Array size: " << arraySize << std::endl;
+    std::cout << "Thread block size: " << BLOCK_SIZE << std ::endl;
+    std::cout << "Number of thread blocks: " << threadX * threadY << std::endl;
+
+    clock_t start,
+        end; // used to measure the execution time on CPU
+    start = clock();
+
     // Do CPU matrix addition with matrixA and matrixB
     multiply_matrix_cpu(matrixA, matrixB, cpuOutput);
+
+    end = clock();
+
+    // Display how long it took the CPU to execute
+    printf("\nClocks per second: %ld", CLOCKS_PER_SEC);
+    printf("\nNumber of clock ticks: %ld", (end - start));
+    printf("\nCPU execution time in seconds: %f\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     std::cout << "Matrix A:" << std::endl;
     displayMatrix(matrixA);
@@ -61,14 +85,6 @@ int main()
     std::cout << "CPU Output:" << std::endl;
     displayMatrix(cpuOutput);
     std::cout << std::endl;
-
-    // Thread block size
-    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE, 1);
-
-    // Caluclate threads per block based of grid width and block size
-    int threadX = std::ceil((double)MATRIX_WIDTH / dimBlock.x);
-    int threadY = std::ceil((double)MATRIX_WIDTH / dimBlock.y);
-    dim3 dimGrid(threadX, threadY, 1);
 
     // Define GPU matrices
     float hostOutputMatrix[arraySize];
@@ -88,7 +104,24 @@ int main()
     cudaMemcpy(deviceMatrixA, matrixA, memSize, cudaMemcpyHostToDevice);
     cudaMemcpy(deviceMatrixB, matrixB, memSize, cudaMemcpyHostToDevice);
 
+    // Create timing variables
+    float timeGPU; // Time the GPU method.
+    cudaEvent_t gpuStart, gpuStop;
+
+    // Start timing gpu execution
+    cudaEventCreate(&gpuStart);
+    cudaEventCreate(&gpuStop);
+    cudaEventRecord(gpuStart, 0);
+
     multiply_matrix_gpu<<<dimGrid, dimBlock>>>(deviceMatrixA, deviceMatrixB, deviceMatrixOutput);
+
+    // Stop timer
+    cudaDeviceSynchronize();
+    cudaEventRecord(gpuStop, 0);
+    cudaEventSynchronize(gpuStop);
+    cudaEventElapsedTime(&timeGPU, gpuStart, gpuStop);
+    cudaEventDestroy(gpuStart);
+    cudaEventDestroy(gpuStop);
 
     // Copy result back from GPU
     cudaMemcpy(hostOutputMatrix, deviceMatrixOutput, memSize, cudaMemcpyDeviceToHost);
@@ -97,22 +130,20 @@ int main()
     cudaDeviceSynchronize();
 
     // Display results
-    std::cout << "Matrix A:" << std::endl;
-    displayMatrix(matrixA);
-    std::cout << std::endl;
-
-    std::cout << "Matrix B:" << std::endl;
-    displayMatrix(matrixB);
-    std::cout << std::endl;
+    std::cout << "GPU Execution Time in seconds: " << timeGPU << std::endl;
 
     std::cout << "GPU Output:" << std::endl;
     displayMatrix(hostOutputMatrix);
     std::cout << std::endl;
 
-    // If the matricies from CPU and GPU are equal then print "TEST PASSED"
+    // If the matrices from CPU and GPU are equal then print "TEST PASSED"
     if (matrixEqual(cpuOutput, hostOutputMatrix))
     {
         std::cout << "TEST PASSED" << std::endl;
+    }
+    else 
+    {
+        std::cout << "TEST FAILED" << std::endl;
     }
 
     // Free all cuda memory
@@ -135,14 +166,14 @@ void displayMatrix(float *matrix)
             {
                 // Display the value of the current entry
                 int index = i * MATRIX_WIDTH + j;
-                if (matrix[index] < 0)
-                {
-                    std::cout << matrix[index] << "  ";
-                }
-                else
-                {
-                    std::cout << matrix[index] << "   ";
-                }
+                // if (matrix[index] < 0)
+                // {
+                    printf("%9.0f ", matrix[index]);
+                // }
+                // else
+                // {
+                //     std::cout << matrix[index] << "   ";
+                // }
             }
             std::cout << std::endl;
         }
@@ -153,7 +184,8 @@ void displayMatrix(float *matrix)
         for (int i = 0; i < MATRIX_WIDTH; i++)
         {
             // Display the value of the current entry
-            std::cout << matrix[i] << " ";
+            // std::cout << matrix[i] << " ";
+            printf("%9.0f ", matrix[index]);
         }
 
         std::cout << std::endl;
@@ -171,7 +203,7 @@ void initArray(float *array)
     }
 }
 
-/// @brief Determines if two given matricies are equal to one another
+/// @brief Determines if two given matrices are equal to one another
 /// @param matrixA
 /// @param matrixB
 /// @return
@@ -192,11 +224,11 @@ bool matrixEqual(float *matrixA, float *matrixB)
         }
     }
 
-    // If we never hit false then the matricies are equal
+    // If we never hit false then the matrices are equal
     return true;
 }
 
-/// @brief Performs matrix addition on two matricies using the CPU
+/// @brief Performs matrix multiplication on two matrices using the CPU
 /// @param matrixA
 /// @param matrixB
 /// @param outputMatrix
@@ -206,7 +238,7 @@ void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix)
     // Loop through all the rows of the matrix
     for (int i = 0; i < MATRIX_WIDTH; i++)
     {
-        // For each row loop through each column
+        // Foreach row loop through each column
         for (int j = 0; j < MATRIX_WIDTH; j++)
         {
             // Declare a sum for the current entries output
@@ -226,15 +258,15 @@ void multiply_matrix_cpu(float *matrixA, float *matrixB, float *outputMatrix)
     }
 }
 
-/// @brief Performs tiled matrix multiplication on two matricies using the GPU
+/// @brief Performs tiled matrix multiplication on two matrices using the GPU
 /// @param matrixA
 /// @param matrixB
 /// @param outputMatrix
 /// @return
 __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outputMatrix)
 {
-    __shared__ float ds_A[TILE_WIDTH * TILE_WIDTH];
-    __shared__ float ds_B[TILE_WIDTH * TILE_WIDTH];
+    __shared__ float ds_A[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float ds_B[TILE_WIDTH][TILE_WIDTH];
 
     int bx = blockIdx.x;
     int by = blockIdx.y;
@@ -250,13 +282,13 @@ __global__ void multiply_matrix_gpu(float *matrixA, float *matrixB, float *outpu
     for (int i = 0; i < MATRIX_WIDTH / TILE_WIDTH; i++)
     {
         // Loading data into the current tile
-        ds_A[ty * i + tx] = matrixA[(row * MATRIX_WIDTH) + (i * TILE_WIDTH) + tx];
-        ds_B[ty * i + tx] = matrixB[(i * TILE_WIDTH + ty) * MATRIX_WIDTH + col];
+        ds_A[ty][tx] = matrixA[(row * MATRIX_WIDTH) + (i * TILE_WIDTH) + tx];
+        ds_B[ty][tx] = matrixB[(i * TILE_WIDTH + ty) * MATRIX_WIDTH + col];
         __syncthreads();
 
         for (int j = 0; j < TILE_WIDTH; j++)
         {
-            pValue += ds_A[ty * TILE_WIDTH + j] * ds_B[j * TILE_WIDTH + tx];
+            pValue += ds_A[ty][j] * ds_B[j][tx];
         }
         __syncthreads();
     }
