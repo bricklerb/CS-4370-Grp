@@ -42,8 +42,8 @@ int main()
             int index = (i * MATRIX_WIDTH) + j;
 
             init = 3125 * init % 6553;
-            matrixA[index] = ((init - 1000) % 6553) % 100;
-            matrixB[index] = (init % 251) % 100; // TODO change these back
+            matrixA[index] = ((init - 1000) % 6553);
+            matrixB[index] = (init % 251);
         }
     }
 
@@ -131,14 +131,6 @@ int main()
 
     // Display results
     std::cout << "GPU Execution Time in seconds: " << timeGPU << std::endl;
-
-    std::cout << "Matrix A:" << std::endl;
-    displayMatrix(matrixA);
-    std::cout << std::endl;
-
-    std::cout << "Matrix B:" << std::endl;
-    displayMatrix(matrixB);
-    std::cout << std::endl;
 
     std::cout << "GPU Output:" << std::endl;
     displayMatrix(hostOutputMatrix);
