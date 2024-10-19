@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/admin/gitHub/reneepaxson/CS-4370-Grp",
+      "program": "/Users/admin/gitHub/reneepaxson/CS-4370-Grp/build/Debug/outDebug"
+    }
+  ]
+}
