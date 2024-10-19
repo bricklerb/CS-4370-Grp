@@ -31,6 +31,6 @@ Speedup | -85% / -84% | -10% / 5% | 208% / 318%
 
 ![1024*1024 matrix with a tile width of 16](./images/1024matrix-16tile-output.JPG)
 
-4096*4096 matrix with a tile width of 32 (had to zoom out a lot to capture a screenshot, but TEST PASSED can still be seen at the bottom of the image, and a textfile version of this output can be found [here](./output-files/4096matrix-32tile-output.txt)):
+4096*4096 matrix with a tile width of 32 (had to zoom out a lot to capture a screenshot, but TEST PASSED can still be seen at the bottom of the image, and a textfile version of this output can be found in the [output-files folder](./output-files/4096matrix-32tile-output.txt)):
 
 ![4096*4096 matrix with a tile width of 32](./images/4096matrix-32tile-outtput.JPG)
