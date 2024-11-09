@@ -11,8 +11,8 @@
 #include <cuda.h>
 
 // #define MATRIX_WIDTH 4096
-#define BLOCK_SIZE 32
-#define ARRAY_SIZE 2048
+#define BLOCK_SIZE 512
+#define ARRAY_SIZE 131072
 // #define TILE_WIDTH 32
 
 int sum_reduction(int *x, int N);
@@ -64,6 +64,9 @@ int main()
     int dimGrid = ceil((double)ARRAY_SIZE / (2 * dimBlock));
     float totalGPUTime = 0;
 
+    std::cout << "Number of thread blocks: " << dimGrid << std::endl;
+    std::cout << "Thread block size: " << dimBlock << std::endl;
+
     // Loop!!
     while (true)
     {
@@ -114,6 +117,11 @@ int main()
     std::cout << std::endl;
 
     cudaFree(gpuInput);
+
+    if (gpuOutputOnHost[0] == outputCpuArray[0])
+    {
+        std::cout << "TEST PASSED" << std::endl;
+    }
 }
 
 /// @brief Displays the contents of a given array as a matrix, if the MATRIX_WIDTH is larger than 8 -> only displays first row
@@ -154,31 +162,6 @@ void initArray(int *array, bool initData, int arraySize)
             array[i] = (init - 1000) % 97;
         }
     }
-}
-
-/// @brief Determines if two given matricies are equal to one another
-/// @param matrixA
-/// @param matrixB
-/// @return
-bool matrixEqual(float *matrixA, float *matrixB)
-{
-    // // Loop through rows and columns of matrix
-    // for (int i = 0; i < MATRIX_WIDTH; i++)
-    // {
-    //     for (int j = 0; j < MATRIX_WIDTH; j++)
-    //     {
-
-    //         // If a single entry doesnt equal return false
-    //         int index = i * MATRIX_WIDTH + j;
-    //         if (matrixA[index] != matrixB[index])
-    //         {
-    //             return false;
-    //         }
-    //     }
-    // }
-
-    // // If we never hit false then the matricies are equal
-    return true;
 }
 
 int sum_reduction(int *x, int N)

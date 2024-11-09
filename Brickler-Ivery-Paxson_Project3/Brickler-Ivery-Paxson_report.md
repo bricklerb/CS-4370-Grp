@@ -14,16 +14,16 @@ For this lab, we were able to get our code fully functional and working. We exec
 
 ### Task 1 Runtime Table
 
-Time | 128 * 128 | 1024 * 1024 | 4096 * 4096
+Time | 131072  | 1024 * 1024 | 4096 * 4096
 -----|-----------|-------------|-------------|
 CPU Comp Time (s) | 0.011143 | 5.552852 | 1196.504552 |
 GPU Comp Time (ms) | 0.075584 (Tile width of 8) / 0.06752 (Tile width of 16) | 6.23139 (Tile width of 8) / 5.28634 (Tile width of 16) | 388.023 (Tile width of 8) / 286.391 (Tile width of 16) / 203.53 (Tile width of 32) |
 Speedup | -85% / -84% | -10% / 5% | 208% / 318%
 
 ### Execution Results
-8*8 matrix with a tile width of 4:
+131072 Length array with block size of 512
 
-![8*8 matrix with a tile width of 4](./images/8matrix-4tile-output.png)
+![8*8 matrix with a tile width of 4](./images/Task1_Test1.png)
 
 128*128 matrix with a tile width of 8:
 
