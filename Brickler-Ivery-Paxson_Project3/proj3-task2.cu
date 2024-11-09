@@ -8,58 +8,82 @@
 #define ARRAY_SIZE 8
 
 void prefix_sum(int *arrayB, int *arrayA, int array_size);
-__global__ void prefix_sum_kernel(int *arrayA, int *arrayB, int array_size);
+__global__ void prefix_sum_kernel(int *dev_arrayA, int *arrayB, int array_size);
 void initArray(int *, bool, int);
 void displayArray(int *, int);
 
 int main()
 {
-    // define arrays
+    // save ARRAY_SIZE to local just in case
+    int inputSize = ARRAY_SIZE;
+    // CPU define arrays
     int arrayA[ARRAY_SIZE];
     int arrayB[ARRAY_SIZE];
+    // device arrays
+    int *dev_arrayA;
+    int *dev_arrayB; // TODO: don't need dev_arrayB?
+    int *dev_output;
+    cudaMalloc((void **)&dev_arrayA, (inputSize * sizeof(int)));
+    cudaMalloc((void **)&dev_arrayB, (inputSize * sizeof(int)));
+    cudaMalloc((void **)&dev_output, (inputSize * sizeof(int)));
+
+    // thread block size
+    dim3 dimBlock(BLOCK_SIZE);
+    dim3 dimGrid(ceil(double(ARRAY_SIZE)/(2 * dimBlock.x)));
 
     // init arrays
     initArray(arrayA, true, ARRAY_SIZE);
-    // i don't think b needs data
     initArray(arrayB, true, ARRAY_SIZE);
 
+    // copy content from cpu arrayA/B to gpu dev_arrayA/B
+    cudaMemcpy(dev_arrayA, arrayA, (inputSize * sizeof(int)), cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_arrayB, arrayB, (inputSize * sizeof(int)), cudaMemcpyHostToDevice); // TODO: don't need dev_arrayB?
+
+    // seg fault ?
+    int *dev_outputOnHost = new int[inputSize];
+    cudaMemcpy(dev_output, dev_outputOnHost, (inputSize * sizeof(int)), cudaMemcpyHostToDevice);
+
+    std::cout << "Starting array: " << std::endl; 
     displayArray(arrayA, ARRAY_SIZE);
+    std::cout << std::endl;
+
     // CPU prefix sum
     prefix_sum(arrayB, arrayA, ARRAY_SIZE);
-
+    std::cout << "CPU array: " << std::endl;
     displayArray(arrayB, ARRAY_SIZE);
+    std::cout << std::endl;
 
-    // // thread block size
-    // dim3 dimBlock(BLOCK_SIZE);
-    // dim3 dimGrid(ceil(double(ARRAY_SIZE)/(2 * dimBlock.x)));
-    // prefix_sum_kernel<<<dimGrid,dimBlock>>>(arrayA, arrayB, ARRAY_SIZE);
+    
 
-    // std::cout << "Array size: " << ARRAY_SIZE << std::endl;
+    // GPU prefix sum
+    prefix_sum_kernel<<<dimGrid,dimBlock>>>(dev_arrayA, dev_arrayB, ARRAY_SIZE); // TODO: don't need dev_arrayB?
 
-    // prefix_sum(arrayA, arrayB, ARRAY_SIZE);
+    // seg fault
+    cudaMemcpy(dev_outputOnHost, dev_arrayA, (inputSize * sizeof(int)), cudaMemcpyDeviceToHost);
 
-    // cudaMalloc((void **)&arrayA, (ARRAY_SIZE * sizeof(int)));
-    // cudaMalloc((void **)&arrayA, (ARRAY_SIZE * sizeof(int)));
-
-    // cudaMemcpy(gpuInput, array, inputSize * sizeof(int), cudaMemcpyHostToDevice);
+    std::cout << "GPU parallel prefix sum" << std:: endl;
+    displayArray(dev_outputOnHost, ARRAY_SIZE);
+    std::cout << std::endl;
 }
 
 void prefix_sum(int *arrayB, int *arrayA, int array_size)
 {
+    // this is sequential sum
     arrayB[0] = arrayA[0];
     for (int i = 1; i < array_size; i++)
         arrayB[i] = arrayB[i - 1] + arrayA[i];
 }
 
-__global__ void prefix_sum_kernel(int *arrayA, int *arrayB, int array_size)
+// TODO: don't need dev_arrayB?
+__global__ void prefix_sum_kernel(int *dev_arrayA, int *dev_arrayB, int array_size)
 {
 
     __shared__ int scan_array[2 * BLOCK_SIZE];
 
     unsigned int t = threadIdx.x;
     unsigned int start = 2 * blockIdx.x * blockDim.x;
-    scan_array[t] = arrayA[start + t];
-    scan_array[blockDim.x + t] = arrayA[start + blockDim.x + t];
+    scan_array[t] = dev_arrayA[start + t];
+    scan_array[blockDim.x + t] = dev_arrayA[start + blockDim.x + t];
 
     __syncthreads();
 
@@ -92,8 +116,8 @@ __global__ void prefix_sum_kernel(int *arrayA, int *arrayB, int array_size)
 
     __syncthreads();
 
-    arrayA[start + t] = scan_array[t];
-    arrayA[start + blockDim.x + t] = scan_array[blockDim.x + t];
+    dev_arrayA[start + t] = scan_array[t];
+    dev_arrayA[start + blockDim.x + t] = scan_array[blockDim.x + t];
 }
 
 /// @brief Displays the contents of a given array as a matrix, if the MATRIX_WIDTH is larger than 8 -> only displays first row
