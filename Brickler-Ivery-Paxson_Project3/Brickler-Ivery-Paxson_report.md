@@ -5,12 +5,14 @@ Professor Meilin Liu
 
 8 November 2024
 
-## Project 2: Tiled Matrix Multiplication - Project Report
+## Project 3: Sum Reduce and Prefix Sum - Project Report
 
 ### Report
-For this lab, we were able to get our code fully functional and working. We executed the code using the command, `nvcc Project2.cu && ./a.out`. The program does both cpu multiplication and gpu tiled matrix multiplication correctly. For runtimes for the configurations and the performance differentials are listed in the table below. 
+For this lab, we were able to get our code fully functional and working. We executed the code using the following commands:
+`nvcc Project3_Task1.cu -o Project 3_Task1 && ./Project3_Task1.out`
+`nvcc Project3_Task2.cu -o Project3_Task2 && ./Project3_Task2.out`
 
-### Runtime Table
+### Task 1 Runtime Table
 
 Time | 128 * 128 | 1024 * 1024 | 4096 * 4096
 -----|-----------|-------------|-------------|
