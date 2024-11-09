@@ -29,19 +29,23 @@ int main()
 
     displayArray(arrayB, ARRAY_SIZE);
 
-    // // thread block size
-    // dim3 dimBlock(BLOCK_SIZE);
-    // dim3 dimGrid(ceil(double(ARRAY_SIZE)/(2 * dimBlock.x)));
-    // prefix_sum_kernel<<<dimGrid,dimBlock>>>(arrayA, arrayB, ARRAY_SIZE);
+    // thread block size
+    dim3 dimBlock(BLOCK_SIZE);
+    dim3 dimGrid(ceil(double(ARRAY_SIZE)/(2 * dimBlock.x)));
+    prefix_sum_kernel<<<dimGrid,dimBlock>>>(arrayA, arrayB, ARRAY_SIZE);
 
+    printf("Array size: %d, Block size: %d, Grid size: %d\n", ARRAY_SIZE, dimBlock.x, dimGrid.x);
     // std::cout << "Array size: " << ARRAY_SIZE << std::endl;
 
-    // prefix_sum(arrayA, arrayB, ARRAY_SIZE);
+    prefix_sum(arrayA, arrayB, ARRAY_SIZE);
 
-    // cudaMalloc((void **)&arrayA, (ARRAY_SIZE * sizeof(int)));
-    // cudaMalloc((void **)&arrayA, (ARRAY_SIZE * sizeof(int)));
+    // declare device arrays, allocate, then transfer
+    int *gpuInput;
 
-    // cudaMemcpy(gpuInput, array, inputSize * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&gpuInput, (ARRAY_SIZE * sizeof(int)));
+    cudaMemcpy(gpuInput, arrayA, ARRAY_SIZE * sizeof(int), cudaMemcpyHostToDevice);
+    // cudaMalloc((void **)&arrayB, (ARRAY_SIZE * sizeof(int)));
+
 }
 
 void prefix_sum(int *arrayB, int *arrayA, int array_size)
