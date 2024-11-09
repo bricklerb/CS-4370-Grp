@@ -11,14 +11,14 @@
 #include <cuda.h>
 
 // #define MATRIX_WIDTH 4096
-#define BLOCK_SIZE 2
-#define ARRAY_SIZE 8
+#define BLOCK_SIZE 4
+#define ARRAY_SIZE 16
 // #define TILE_WIDTH 32
 
 int sum_reduction(int *x, int N);
-void initArray(int *array);
-void displayArray(int *matrix);
-__global__ void parallel_sum_reduction(int *input, int *output);
+void initArray(int *, bool, int);
+void displayArray(int *matrix, int);
+__global__ void parallel_sum_reduction(int *input);
 
 int main()
 {
@@ -27,19 +27,10 @@ int main()
     int outputCpuArray[ARRAY_SIZE];
 
     // Init  each arry with data
-    initArray(array);
-    initArray(outputCpuArray);
+    initArray(array, true, ARRAY_SIZE);
+    initArray(outputCpuArray, true, ARRAY_SIZE);
 
-    // Thread block size
-    dim3 dimBlock(BLOCK_SIZE);
-
-    dim3 dimGrid = (double)ARRAY_SIZE / (2 * dimBlock.x);
-    std::cout << dimGrid.x;
-
-    // Print array information
     std::cout << "Array size: " << ARRAY_SIZE << std::endl;
-    std::cout << "Thread block size: " << BLOCK_SIZE << std ::endl;
-    std::cout << "Number of thread blocks: " << dimGrid.x << std::endl;
 
     clock_t start, end; // used to measure the execution time on CPU
     start = clock();
@@ -55,145 +46,153 @@ int main()
     printf("\nCPU execution time in seconds:%f\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     std::cout << "Array:" << std::endl;
-    displayArray(array);
+    // displayArray(array, ARRAY_SIZE);
     std::cout << std::endl;
 
     std::cout << "CPU Output:" << std::endl;
-    displayArray(outputCpuArray);
+    // displayArray(outputCpuArray, ARRAY_SIZE);
     std::cout << std::endl;
 
-    // // Define GPU arrays
-    int *gpuInput, *gpuOutput;
-
-    int currentOutputSize = dimGrid.x; // Number of thread blocks that will generate answers
-    int gpuOutputOnHost[currentOutputSize];
-
+    // Declare the array on the device
     int inputSize = ARRAY_SIZE;
+    int *gpuInput;
 
-    float totalGPUTime = 0;
-
-    // Loop through until only 1 thread block executes to get the final answer
-    // while (currentOutputSize != 1)
-    // {
-    // Create arrays on device for this execution
-    cudaMalloc((void **)&gpuInput, inputSize * sizeof(int));
-    cudaMalloc((void **)&gpuOutput, currentOutputSize * sizeof(int));
-
-    std::cout << currentOutputSize;
-
-    // Copy over the current inputs and
+    cudaMalloc((void **)&gpuInput, (inputSize * sizeof(int)));
     cudaMemcpy(gpuInput, array, inputSize * sizeof(int), cudaMemcpyHostToDevice);
 
-    // // Create timing variables
-    float timeGPU; // Time the GPU method.
-    cudaEvent_t gpuStart, gpuStop;
+    int dimBlock = BLOCK_SIZE;
+    int dimGrid = ceil((double)ARRAY_SIZE / (2 * dimBlock));
 
-    cudaEventCreate(&gpuStart);
-    cudaEventCreate(&gpuStop);
-    cudaEventRecord(gpuStart, 0);
+    // Loop!!
+    while (true)
+    {
+        std::cout << "Thread block size: " << dimBlock << std ::endl;
+        std::cout << "Number of thread blocks: " << dimGrid << std::endl;
 
-    parallel_sum_reduction<<<dimGrid, dimBlock>>>(gpuInput, gpuOutput);
+        // // // Create timing variables
+        // float timeGPU; // Time the GPU method.
+        // cudaEvent_t gpuStart, gpuStop;
 
-    cudaDeviceSynchronize();
-    cudaEventRecord(gpuStop, 0);
-    cudaEventSynchronize(gpuStop);
-    cudaEventElapsedTime(&timeGPU, gpuStart, gpuStop);
-    cudaEventDestroy(gpuStart);
-    cudaEventDestroy(gpuStop);
+        // cudaEventCreate(&gpuStart);
+        // cudaEventCreate(&gpuStop);
+        // cudaEventRecord(gpuStart, 0);
 
-    totalGPUTime += timeGPU;
+        // parallel_sum_reduction<<<dimGrid, dimBlock>>>(gpuInput);
 
-    cudaMemcpy(gpuOutputOnHost, gpuOutput, currentOutputSize * sizeof(int), cudaMemcpyDeviceToHost);
+        // cudaDeviceSynchronize();
+        // cudaEventRecord(gpuStop, 0);
+        // cudaEventSynchronize(gpuStop);
+        // cudaEventElapsedTime(&timeGPU, gpuStart, gpuStop);
+        // cudaEventDestroy(gpuStart);
+        // cudaEventDestroy(gpuStop);
 
-    // Input to the next reduction is set to the output of the last run
-    gpuInput = gpuOutputOnHost;
-    inputSize = sizeof(gpuOutputOnHost);
+        // If only one block was used no need to reduce more
+        if (dimGrid == 1)
+        {
+            break;
+        }
 
-    // Change block sizes
-    dimBlock = (inputSize / 2);
-    dimGrid = (double)inputSize / (2 * dimBlock.x);
+        // we can reduce in one more execution
+        int oldDimGrid = dimGrid;
+        if (oldDimGrid < 513)
+        {
+            dimBlock = ceil(oldDimGrid / 2);
+        }
 
-    // update new output size
-    currentOutputSize = dimGrid.x;
+        int dimGrid = ceil((double)oldDimGrid / (2 * dimBlock));
+    }
 
-    // Clean up GPU resources
-    cudaFree(gpuInput);
-    cudaFree(gpuOutput);
+    // int currentOutputSize = dimBlock.x; // Number of thread blocks that will generate answers
+    // int *gpuOutputOnHost = new int[currentOutputSize];
+    // initArray(gpuOutputOnHost, false);
 
-    cudaDeviceSynchronize();
-    // }
+    // int inputSize = ARRAY_SIZE;
 
-    // Display results
-    std::cout << "GPU Execution Time in seconds: " << totalGPUTime << std::endl;
+    // float totalGPUTime = 0;
 
-    std::cout << "GPU Output:" << std::endl;
-    displayArray(gpuOutputOnHost);
-    std::cout << std::endl;
+    // // Loop through until only 1 thread block executes to get the final answer
+    // // Create arrays on device for this execution
+    // int *gpuInput;
+
+    // cudaMalloc((void **)&gpuOutput, (currentOutputSize * sizeof(int)));
+    // cudaMalloc((void **)&gpuInput, (inputSize * sizeof(int)));
+
+    // // Copy over the current inputs and
+    // cudaMemcpy(gpuInput, array, inputSize * sizeof(int), cudaMemcpyHostToDevice);
+    // cudaMemcpy(gpuOutput, gpuOutputOnHost, inputSize * sizeof(int), cudaMemcpyHostToDevice);
+
+    // cudaDeviceSynchronize();
+    // cudaEventRecord(gpuStop, 0);
+    // cudaEventSynchronize(gpuStop);
+    // cudaEventElapsedTime(&timeGPU, gpuStart, gpuStop);
+    // cudaEventDestroy(gpuStart);
+    // cudaEventDestroy(gpuStop);
+
+    // totalGPUTime += timeGPU;
+
+    // cudaMemcpy(gpuOutputOnHost, gpuOutput, currentOutputSize * sizeof(int), cudaMemcpyDeviceToHost);
+    // displayArray(gpuOutputOnHost);
+
+    // // Clean up GPU resources from first reduction
+    // cudaFree(gpuInput);
+    // cudaFree(gpuOutput);
+
+    // // Reduce the answers if needed
+    // inputSize = dimBlock.x;
+
+    // // Input to the next reduction is set to the output of the last run
+    // gpuInput = gpuOutputOnHost;
+    // inputSize = dimBlock.x; // new input is previous blocks
+
+    // // Change block sizes
+    // dimBlock = (inputSize / 2); // half the number of blocks
+    // dimGrid = (double)inputSize / (2 * dimBlock.x);
+
+    // // update new output size
+    // currentOutputSize = dimBlock.x;
+
+    // cudaDeviceSynchronize();
+
+    // // Display results
+    // std::cout << "GPU Execution Time in seconds: " << totalGPUTime << std::endl;
+
+    // std::cout << "GPU Output:" << std::endl;
+    // displayArray(gpuOutputOnHost);
+    // std::cout << std::endl;
 }
 
 /// @brief Displays the contents of a given array as a matrix, if the MATRIX_WIDTH is larger than 8 -> only displays first row
 /// @param matrix The given array for the matrix
-void displayArray(int *array)
+void displayArray(int *array, int arraySize)
 {
     std::cout << "[ ";
 
-    for (int i = 0; i < sizeof(array); i++)
+    for (int i = 0; i < arraySize; i++)
     {
         std::cout << array[i] << " ";
     }
 
     std::cout << "]" << std::endl;
-
-    // if (MATRIX_WIDTH <= 8)
-    // {
-    //     // Small matrix print entire thing
-    //     for (int i = 0; i < MATRIX_WIDTH; i++)
-    //     {
-    //         // Loop through columns of row
-    //         for (int j = 0; j < MATRIX_WIDTH; j++)
-    //         {
-    //             // Display the value of the current entry
-    //             int index = i * MATRIX_WIDTH + j;
-    //             if (matrix[index] < 0)
-    //             {
-    //                 std::cout << matrix[index] << "  ";
-    //             }
-    //             else
-    //             {
-    //                 std::cout << matrix[index] << "   ";
-    //             }
-    //         }
-    //         std::cout << std::endl;
-    //     }
-    // }
-    // else
-    // {
-    //     // large matrix only print first row
-    //     for (int i = 0; i < MATRIX_WIDTH; i++)
-    //     {
-    //         // Display the value of the current entry
-    //         std::cout << matrix[i] << " ";
-    //     }
-
-    //     std::cout << std::endl;
-    // }
 }
 
 /// @brief Sets all the values in an array to zero for initialization
 /// @param array
-void initArray(int *array)
+void initArray(int *array, bool initData, int arraySize)
 {
     // Loop through rows and columns and init values to 0
-    for (int i = 0; i < sizeof(array); i++)
+    for (int i = 0; i < arraySize; i++)
     {
-        array[i] = (int)0;
+        array[i] = 0;
     }
 
-    int init = 1325;
-    for (int i = 0; i < sizeof(array); i++)
+    if (initData)
     {
-        init = 3125 * init % 6553;
-        array[i] = (init - 1000) % 97;
+        int init = 1325;
+        for (int i = 0; i < arraySize; i++)
+        {
+            init = 3125 * init % 6553;
+            array[i] = (init - 1000) % 97;
+        }
     }
 }
 
@@ -230,10 +229,8 @@ int sum_reduction(int *x, int N)
     return overallSum;
 }
 
-__global__ void parallel_sum_reduction(int *input, int *output)
+__global__ void parallel_sum_reduction(int *input)
 {
-    printf("%d", sizeof(input));
-
     __shared__ int partialSum[2 * BLOCK_SIZE];
 
     unsigned int tx = threadIdx.x;
@@ -252,5 +249,6 @@ __global__ void parallel_sum_reduction(int *input, int *output)
     }
 
     __syncthreads();
-    output[blockIdx.x] = partialSum[0];
+    input[tx + (blockIdx.x * blockDim.x)];
+    input[blockIdx.x] = partialSum[0];
 }
