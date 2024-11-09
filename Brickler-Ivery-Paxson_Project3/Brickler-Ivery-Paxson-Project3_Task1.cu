@@ -12,7 +12,7 @@
 
 // #define MATRIX_WIDTH 4096
 #define BLOCK_SIZE 512
-#define ARRAY_SIZE 131072
+#define ARRAY_SIZE 16777216
 // #define TILE_WIDTH 32
 
 int sum_reduction(int *x, int N);
@@ -110,7 +110,7 @@ int main()
     cudaMemcpy(gpuOutputOnHost, gpuInput, (inputSize * sizeof(int)), cudaMemcpyDeviceToHost);
 
     // Display results
-    std::cout << "GPU Execution Time in seconds: " << totalGPUTime << std::endl;
+    std::cout << "GPU Execution Time in seconds: " << totalGPUTime / 60 << std::endl;
 
     std::cout << "GPU Output:" << std::endl;
     displayArray(gpuOutputOnHost, ARRAY_SIZE);
@@ -191,6 +191,5 @@ __global__ void parallel_sum_reduction(int *input)
         }
     }
 
-    __syncthreads();
     input[blockIdx.x] = partialSum[0];
 }
