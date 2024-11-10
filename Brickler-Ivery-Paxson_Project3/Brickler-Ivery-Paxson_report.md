@@ -18,7 +18,6 @@ Time | 131072  | 1048576  | 16777216
 -----|-----------|-------------|-------------|
 CPU Comp Time (s) | 0.000366 | 0.002610 | 0.041925 |
 GPU Comp Time (s) | 0.00144587 | 0.00343467 | 0.0362523
-Speedup | -75.7% | -24.0% |  115% |
 
 ### Execution Results - Task 1
 131072 Length array with block size of 512
@@ -37,10 +36,14 @@ Speedup | -75.7% | -24.0% |  115% |
 
 ### Task 2 Runtime Table
 
-Time |   |   | 
------|-----------|-------------|-------------|
-CPU Comp Time (s) |  |  |  |
-GPU Comp Time (s) |  |  | 
-Speedup |  |  |  |
+Time | 2048  | 16777216
+-----|-----------|-------------|
+CPU Comp Time (s) | 0.000008 |  
+GPU Comp Time (s) | 0.083424 |   
 
 ### Execution Results - Task 1
+2048 Length array with block size of 1024
+![2048 Length array with block size of 1024](./images/Task2_Test1.png)
+
+# Notes
+* The program does not correctly handle large arrays that get split into multiple blocks
