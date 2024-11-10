@@ -32,3 +32,15 @@ Speedup | -75.7% | -24.0% |  115% |
 16777216 Length array with block size of 512 
 
 ![128*128 matrix with a tile width of 8](./images/Task1_Test3.png)
+
+
+
+### Task 2 Runtime Table
+
+Time |   |   | 
+-----|-----------|-------------|-------------|
+CPU Comp Time (s) |  |  |  |
+GPU Comp Time (s) |  |  | 
+Speedup |  |  |  |
+
+### Execution Results - Task 1
