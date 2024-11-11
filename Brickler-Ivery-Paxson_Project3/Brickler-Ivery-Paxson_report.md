@@ -9,8 +9,9 @@ Professor Meilin Liu
 
 ### Report
 For this lab, we were able to get our code fully functional and working. We executed the code using the following commands:
-`nvcc Brickler-Ivery-Paxson-Project3_Task1.cu -o Project3_Task1 && ./Project3_Task1.out`
-`nvcc Brickler-Ivery-Paxson-Project3_Task2.cu -o Project3_Task2 && ./Project3_Task2.out`
+`nvcc Brickler-Ivery-Paxson-Project3_Task1.cu -o Project3_Task1 && ./Project3_Task1`
+
+`nvcc Brickler-Ivery-Paxson-Project3_Task2.cu -o Project3_Task2 && ./Project3_Task2`
 
 ### Task 1 Runtime Table
 
@@ -20,15 +21,15 @@ CPU Comp Time (s) | 0.000366 | 0.002610 | 0.041925 |
 GPU Comp Time (s) | 0.00144587 | 0.00343467 | 0.0362523
 
 ### Execution Results - Task 1
-131072 Length array with block size of 512
+#### 131072 Length array with block size of 512
 
 ![8*8 matrix with a tile width of 4](./images/Task1_Test1.png)
 
-1048576 Length array with block size of 512 
+#### 1048576 Length array with block size of 512 
 
 ![128*128 matrix with a tile width of 8](./images/Task1_Test2.png)
 
-16777216 Length array with block size of 512 
+#### 16777216 Length array with block size of 512 
 
 ![128*128 matrix with a tile width of 8](./images/Task1_Test3.png)
 
