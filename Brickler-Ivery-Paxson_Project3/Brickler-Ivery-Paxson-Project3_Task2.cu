@@ -11,14 +11,13 @@ void prefix_sum(int *arrayB, int *arrayA, int array_size);
 __global__ void prefix_sum_kernel(int *dev_arrayA, int *arrayB, int array_size);
 void initArray(int *, bool, int);
 void displayArray(int *, int);
-bool arraysEqual(int*, int*);
+bool arraysEqual(int *, int *);
 
 int main()
 {
     //-------------//
-    //CPU EXECUTION//
+    // CPU EXECUTION//
     //-------------//
-
 
     // save ARRAY_SIZE to local just in case
     int inputSize = ARRAY_SIZE;
@@ -30,7 +29,7 @@ int main()
     initArray(arrayA, true, ARRAY_SIZE);
     initArray(arrayB, true, ARRAY_SIZE);
 
-    std::cout << "Starting array: " << std::endl; 
+    std::cout << "Starting array: " << std::endl;
     displayArray(arrayA, ARRAY_SIZE);
     std::cout << std::endl;
 
@@ -52,7 +51,7 @@ int main()
     std::cout << std::endl;
 
     //-------------//
-    //GPU EXECUTION//
+    // GPU EXECUTION//
     //-------------//
 
     // device arrays
@@ -65,8 +64,7 @@ int main()
 
     // thread block size
     dim3 dimBlock(BLOCK_SIZE);
-    dim3 dimGrid(ceil(double(ARRAY_SIZE)/(2 * dimBlock.x)));
-
+    dim3 dimGrid(ceil(double(ARRAY_SIZE) / (2 * dimBlock.x)));
 
     // copy content from cpu arrayA/B to gpu dev_arrayA/B
     cudaMemcpy(dev_arrayA, arrayA, (inputSize * sizeof(int)), cudaMemcpyHostToDevice);
@@ -75,8 +73,6 @@ int main()
     // seg fault ?
     int *dev_outputOnHost = new int[inputSize];
     cudaMemcpy(dev_output, dev_outputOnHost, (inputSize * sizeof(int)), cudaMemcpyHostToDevice);
-
-
 
     std::cout << "Number of thread blocks: " << dimGrid.x << std::endl;
     std::cout << "Thread block size: " << dimBlock.x << std::endl;
@@ -90,8 +86,9 @@ int main()
     cudaEventRecord(gpuStart, 0);
 
     // GPU prefix sum
-    // prefix_sum_kernel<<<dimGrid,dimBlock>>>(dev_arrayA, dev_arrayB, ARRAY_SIZE); // TODO: don't need dev_arrayB?
-    prefix_sum_kernel<<<8192,1024>>>(dev_arrayA, dev_arrayB, ARRAY_SIZE); // TODO: don't need dev_arrayB?
+    prefix_sum_kernel<<<dimGrid, dimBlock>>>(dev_arrayA, dev_arrayB, ARRAY_SIZE); // TODO: don't need dev_arrayB?
+
+    // prefix_sum_kernel<<<BLOCK_SIZE, 2>>>(dev_arrayA, dev_arrayB, ARRAY_SIZE); // TODO: don't need dev_arrayB?
 
     cudaDeviceSynchronize();
     cudaEventRecord(gpuStop, 0);
@@ -100,7 +97,6 @@ int main()
     cudaEventDestroy(gpuStart);
     cudaEventDestroy(gpuStop);
 
-
     // seg fault
     cudaMemcpy(dev_outputOnHost, dev_arrayA, (inputSize * sizeof(int)), cudaMemcpyDeviceToHost);
 
@@ -108,13 +104,14 @@ int main()
     // std::cout << "GPU Execution Time in seconds: " << totalGPUTime / 60 << std::endl;
     printf("\nGPU execution time in seconds:%f\n", (timeGPU));
 
-    std::cout << "GPU parallel prefix sum" << std:: endl;
+    std::cout << "GPU parallel prefix sum" << std::endl;
     displayArray(dev_outputOnHost, ARRAY_SIZE);
     std::cout << std::endl;
 
-    if (arraysEqual(dev_outputOnHost, arrayB)) printf("TEST PASSED!\n");
-    else (printf("TEST FAILED!\n"));
-
+    if (arraysEqual(dev_outputOnHost, arrayB))
+        printf("TEST PASSED!\n");
+    else
+        (printf("TEST FAILED!\n"));
 }
 
 void prefix_sum(int *arrayB, int *arrayA, int array_size)
@@ -125,7 +122,7 @@ void prefix_sum(int *arrayB, int *arrayA, int array_size)
         arrayB[i] = arrayB[i - 1] + arrayA[i];
 }
 
-// TODO: don't need dev_arrayB? 
+// TODO: don't need dev_arrayB?
 // not needed but i dont want to break anything
 __global__ void prefix_sum_kernel(int *dev_arrayA, int *dev_arrayB, int array_size)
 {
@@ -212,11 +209,12 @@ void initArray(int *array, bool initData, int arraySize)
     }
 }
 
-bool arraysEqual(int* a, int* b)
+bool arraysEqual(int *a, int *b)
 {
     for (int i = 0; i < ARRAY_SIZE; i++)
     {
-        if (a[i] != b[i]) return false;
+        if (a[i] != b[i])
+            return false;
     }
     return true;
 }
