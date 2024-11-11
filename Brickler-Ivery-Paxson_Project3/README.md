@@ -3,5 +3,6 @@
 Compile: `nvcc Brickler-Ivery-Paxson-Project3_Task1.cu -o Project3_Task1`
 Run: `./Project3_Task1.out` 
 
+## Task 2
 Compile: `nvcc Brickler-Ivery-Paxson-Project3_Task2.cu -o Project3_Task2`
 Run: `./Project3_Task2.out`
