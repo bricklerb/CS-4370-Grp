@@ -21,6 +21,9 @@ int main()
 
     // save ARRAY_SIZE to local just in case
     int inputSize = ARRAY_SIZE;
+
+    std::cout << "Array Size: " << inputSize << std::endl;
+
     // CPU define arrays
     int arrayA[ARRAY_SIZE];
     int arrayB[ARRAY_SIZE];

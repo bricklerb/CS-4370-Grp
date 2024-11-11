@@ -9,7 +9,7 @@ Professor Meilin Liu
 
 ### Report
 For this lab, we were able to get our code fully functional and working. We executed the code using the following commands:
-`nvcc Brickler-Ivery-Paxson-Project3_Task1.cu -o Project 3_Task1 && ./Project3_Task1.out`
+`nvcc Brickler-Ivery-Paxson-Project3_Task1.cu -o Project3_Task1 && ./Project3_Task1.out`
 `nvcc Brickler-Ivery-Paxson-Project3_Task2.cu -o Project3_Task2 && ./Project3_Task2.out`
 
 ### Task 1 Runtime Table
@@ -36,10 +36,10 @@ GPU Comp Time (s) | 0.00144587 | 0.00343467 | 0.0362523
 
 ### Task 2 Runtime Table
 
-Time | 2048  | 16777216
------|-----------|-------------|
+Time | 2048  
+-----|-----------|
 CPU Comp Time (s) | 0.000008 |  
-GPU Comp Time (s) | 0.083424 |   
+GPU Comp Time (s) | 0.048288 |   
 
 ### Execution Results - Task 1
 2048 Length array with block size of 1024
