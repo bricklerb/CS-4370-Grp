@@ -9,6 +9,7 @@ Professor Meilin Liu
 
 ### Report 
 For this lab, we were able to get our code fully functional and working. We executed the code using the following commands:
+
 `nvcc Brickler-Ivery-Paxson_Project4_Task1.cu -o Project4_Task1 -arch=sm_30 && ./Project4_Task1`
 
 `nvcc Brickler-Ivery-Paxson_Project4_Task2.cu -o Project4_Task2 -arch=sm_30 && ./Project4_Task12`
