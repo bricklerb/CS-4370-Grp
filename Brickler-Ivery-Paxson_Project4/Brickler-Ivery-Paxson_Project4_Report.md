@@ -15,29 +15,30 @@ For this lab, we were able to get our code fully functional and working. We exec
 
 ### Task 1 Runtime Table
 
-Time | 131072 | 1048576 
-CPU Comp Time (s) | X | X
-GPU Comp Time (s) | X | X
-GPU Mem Transfer time (s) | X | X
+Time | 131072 | 1048576 | 
+----|----|----|
+CPU Comp Time (s) | 0.000376 | 0.002996 |
+GPU Comp Time (s) | 0.0117376 | 0.0894304 |
+Speedup | -97% | -97% |
 
 ### Execution Results - Task 1
 #### Array size 131072 with block size of 1024
-![task1_131072](/images/task1_131072.png)
+![task1_131072](images/task1_131072.png)
 
 #### Array size 1048576 with block size of 1024 
 
-![task1_1048576](/images/task1_1048576.png)
+![task1_1048576](images/task1_1048576.png)
 
 ### Task 2 Runtime Table
-Time | 131072 | 1048576
-CPU Comp Time (s) | X | X
-GPU Comp Time (s) | X | X
-GPU Mem Transfer time (s) | X | X
-
+Time | 131072 | 1048576 |
+----|----|----|
+CPU Comp Time (s) | X | X |
+GPU Comp Time (s) | X | X |
+Speedup | 
 ### Execution Results - Task 2
 #### Array size 131072 with block size of 1024
-![task2_131072](/images/task2_131072.png)
+![task2_131072](images/task2_131072.png)
 
 #### Array size 1048576 with block size of 1024
 
-![task2_1048576](/images/task2_1048576.png)
+![task2_1048576](images/task2_1048576.png)

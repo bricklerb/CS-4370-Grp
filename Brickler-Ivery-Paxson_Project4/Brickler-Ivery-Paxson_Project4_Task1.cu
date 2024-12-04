@@ -11,7 +11,7 @@
 #include <cuda.h>
 
 #define BLOCK_SIZE 1024
-#define ARRAY_SIZE 131072 
+#define ARRAY_SIZE 1048576  
 
 void histogram(unsigned int *buffer, unsigned int *histo);
 void initArray(unsigned int *, bool, int);
