@@ -1,9 +1,11 @@
 # CS 4370 - Parallel Programming
-Bella Brickler, Jahcorian Ivery, Renee Paxson
+Students: Jahcorian Ivery, Bella Brickler, Renee Paxson
 
-Professor Meilin Liu
+Class: CS 4370 - Parallel Programming for Many-core Gpus
 
-2 December 2024
+Instructor: Meilin Liu
+
+Date: 12/2/2024
 
 ## Project 4: Histogram
 
