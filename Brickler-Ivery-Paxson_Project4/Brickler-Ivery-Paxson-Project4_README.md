@@ -1,4 +1,11 @@
 # Programming Assignment 4 - Histogram
+Students: Jahcorian Ivery, Bella Brickler, Renee Paxson
+
+Class: CS 4370 - Parallel Programming for Many-core Gpus
+
+Instructor: Meilin Liu
+
+Date: 12/2/2024
 
 #### How to compile
 ### Task 1
