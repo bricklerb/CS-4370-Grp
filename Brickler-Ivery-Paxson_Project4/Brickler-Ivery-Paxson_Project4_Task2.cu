@@ -26,7 +26,7 @@ int main()
     unsigned array[ARRAY_SIZE];
     unsigned int cpuHisto[256];
     unsigned int deviceHistoOnHost[256];
-    unsigned int histo_private[256];
+    // unsigned int histo_private[256];
 
     // Init  each arry with data
     initArray(array, true, ARRAY_SIZE);
@@ -62,7 +62,7 @@ int main()
     cudaMalloc((void **)&deviceArray, (ARRAY_SIZE * sizeof(unsigned int)));
     cudaMalloc((void **)&deviceHisto, (256 * sizeof(unsigned int)));
 
-    // Reset data in historgram
+    // Reset data in histogram
     initArray(deviceHistoOnHost, false, 256);
 
     cudaMemcpy(deviceArray, array, ARRAY_SIZE * sizeof(unsigned int), cudaMemcpyHostToDevice);
@@ -193,8 +193,8 @@ __global__ void histo_kernel(unsigned int *buffer, long size, unsigned int *hist
     
     if (threadIdx.x < 256) 
     {
-        atomicAdd(&(histo[threadIdx.x]), histo_private[threadIdx.x])
-    };
+        atomicAdd(&(histo[threadIdx.x]), histo_private[threadIdx.x]);
+    }
     
 }
 
