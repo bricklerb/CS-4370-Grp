@@ -36,7 +36,7 @@ int main()
     clock_t start, end; // used to measure the execution time on CPU
     start = clock();
 
-    // Do Sum reduction on CPU
+    // Do histo calc on cpu
     histogram(array, cpuHisto);
 
     end = clock();
@@ -98,9 +98,11 @@ int main()
     displayHistogram(deviceHistoOnHost);
     std::cout << std::endl;
 
+    // Free up gloabl mem
     cudaFree(deviceHisto);
     cudaFree(deviceArray);
 
+    // Check if results are equal
     if (arrayEqual(deviceHistoOnHost, cpuHisto, 256))
     {
         std::cout << "TEST PASSED" << std::endl;
@@ -108,7 +110,7 @@ int main()
 }
 
 /// @brief Displays the first 10 elements of an array
-/// @param matrix The given array
+/// @param hist the 256 int long histo
 void displayHistogram(unsigned int *hist)
 {
     std::cout << "[ ";
@@ -122,7 +124,8 @@ void displayHistogram(unsigned int *hist)
 }
 
 /// @brief Displays the first 10 elements of an array
-/// @param matrix The given array
+/// @param array
+/// @param arraySize
 void displayArray(unsigned int *array, int arraySize)
 {
     std::cout << "[ ";
@@ -142,6 +145,8 @@ void displayArray(unsigned int *array, int arraySize)
 
 /// @brief Sets all the values in an array to zero for initialization
 /// @param array
+/// @param initData
+/// @param arraySize
 void initArray(unsigned int *array, bool initData, int arraySize)
 {
     // Loop through rows and columns and init values to 0
@@ -161,6 +166,9 @@ void initArray(unsigned int *array, bool initData, int arraySize)
     }
 }
 
+/// @brief calcs a histogram of a given array on the cpu
+/// @param buffer
+/// @param histo
 void histogram(unsigned int *buffer, unsigned int *histo)
 {
     for (int i = 0; i < ARRAY_SIZE; i++)
@@ -169,6 +177,11 @@ void histogram(unsigned int *buffer, unsigned int *histo)
     }
 }
 
+/// @brief calcs a histogram of a given array on the device
+/// @param buffer
+/// @param size
+/// @param histo
+/// @return
 __global__ void histo_kernel(unsigned int *buffer, long size, unsigned int *histo)
 {
     __shared__ unsigned int histo_private[256];
@@ -190,6 +203,11 @@ __global__ void histo_kernel(unsigned int *buffer, long size, unsigned int *hist
         atomicAdd(&(histo[threadIdx.x]), histo_private[threadIdx.x]);
 }
 
+/// @brief Determines if two arrays contain the same elements in the same order to another
+/// @param array1
+/// @param array2
+/// @param size
+/// @return
 bool arrayEqual(unsigned int *array1, unsigned int *array2, long size)
 {
     for (long i = 0; i < size; i++)
