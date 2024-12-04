@@ -184,15 +184,23 @@ void histogram(unsigned int *buffer, unsigned int *histo)
 /// @return
 __global__ void histo_kernel(unsigned int *buffer, long size, unsigned int *histo)
 {
+    __shared__ unsigned int histo_private[256];
+    if (threadIdx.x < 256)
+        histo_private[threadIdx.x] = 0;
+    __syncthreads();
+
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     // stride is total number of threads
-    int stride = blockDim.x * gridDim.x; // All threads handle blockDim.x * gridDim.x
-    // consecutive elements in one loop iteration
+    int stride = blockDim.x * gridDim.x;
     while (i < size)
     {
-        atomicAdd(&(histo[buffer[i]]), 1);
+        atomicAdd(&(histo_private[buffer[i]]), 1);
         i += stride;
     }
+
+    __syncthreads();
+    if (threadIdx.x < 256)
+        atomicAdd(&(histo[threadIdx.x]), histo_private[threadIdx.x]);
 }
 
 /// @brief Determines if two arrays contain the same elements in the same order to another
