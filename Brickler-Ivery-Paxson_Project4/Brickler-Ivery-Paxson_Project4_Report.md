@@ -22,11 +22,11 @@ GPU Mem Transfer time (s) | X | X
 
 ### Execution Results - Task 1
 #### Array size 131072 with block size of 1024
-![task1_131072]()
+![task1_131072](/images/task1_131072)
 
 #### Array size 1048576 with block size of 1024 
 
-![task1_1048576]()
+![task1_1048576](/images/task1_1048576)
 
 ### Task 2 Runtime Table
 Time | 131072 | 1048576
@@ -36,8 +36,8 @@ GPU Mem Transfer time (s) | X | X
 
 ### Execution Results - Task 2
 #### Array size 131072 with block size of 1024
-![task2_131072]()
+![task2_131072](/images/task2_131072)
 
 #### Array size 1048576 with block size of 1024
 
-![task2_1048576]()
+![task2_1048576](/images/task2_1048576)
